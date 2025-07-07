@@ -2,12 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Repo') {
-            steps {
-                git 'https://github.com/Rochitjain73/flask-devops-ci.git'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh 'pip install -r requirements.txt'
