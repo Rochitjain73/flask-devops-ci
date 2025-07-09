@@ -1,36 +1,26 @@
 pipeline {
     agent any
 
+    environment {
+        PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    }
+
     stages {
-        stage('Install Dependencies') {
+        stage('Build Docker Image & Run Tests') {
             steps {
-                script {
-                    docker.image('python:3.10').inside {
-                        sh 'pip install -r requirements.txt'
-                    }
-                }
+                sh '''
+                /usr/local/bin/docker build -t flask-ci-app .
+                '''
             }
         }
 
-        stage('Run Tests') {
+        stage('Run App Container') {
             steps {
-                script {
-                    docker.image('python:3.10').inside {
-                        sh 'pytest'
-                    }
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t flask-devops-ci .'
-            }
-        }
-
-        stage('Run Flask App in Docker') {
-            steps {
-                sh 'docker run -d -p 5050:5050 flask-devops-ci'
+                sh '''
+                /usr/local/bin/docker stop flask-container || true
+                /usr/local/bin/docker rm flask-container || true
+                /usr/local/bin/docker run -d --name flask-container -p 5050:5000 flask-ci-app
+                '''
             }
         }
     }
